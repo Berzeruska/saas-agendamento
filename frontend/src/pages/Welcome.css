@@ -1,0 +1,128 @@
+.welcome-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--espaco-lg);
+}
+
+.welcome-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.welcome-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+}
+
+.welcome-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--cor-acento);
+  top: -100px;
+  right: -100px;
+}
+
+.welcome-orb-2 {
+  width: 300px;
+  height: 300px;
+  background: var(--cor-acento);
+  bottom: -80px;
+  left: -80px;
+  opacity: 0.08;
+}
+
+.welcome-conteudo {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-xl);
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-logo {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-sm);
+}
+
+.welcome-icone {
+  font-size: 3.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 20px var(--sombra-acento));
+}
+
+.welcome-titulo {
+  font-size: clamp(3rem, 12vw, 5rem);
+  background: linear-gradient(135deg, var(--cor-acento-claro), var(--cor-acento));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.08em;
+}
+
+.welcome-tagline {
+  color: var(--cor-texto-fraco);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.welcome-divisor {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-md);
+  width: 100%;
+}
+
+.welcome-divisor span:not(.welcome-divisor-texto) {
+  flex: 1;
+  height: 1px;
+  background: var(--cor-borda);
+}
+
+.welcome-divisor-texto {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--cor-texto-fraco);
+}
+
+.welcome-botoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-sm);
+  width: 100%;
+}
+
+.welcome-btn-grande {
+  padding: 16px;
+  font-size: 1rem;
+}
+
+.welcome-btn-admin {
+  background: transparent;
+  border: none;
+  color: var(--cor-texto-fraco);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  padding: var(--espaco-sm);
+  transition: var(--transicao);
+  font-family: var(--fonte-corpo);
+}
+
+.welcome-btn-admin:hover {
+  color: var(--cor-acento);
+}

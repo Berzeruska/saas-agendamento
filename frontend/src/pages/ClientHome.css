@@ -1,0 +1,111 @@
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--espaco-xl);
+}
+
+.home-boas-vindas {
+  font-size: 0.85rem;
+  color: var(--cor-texto-fraco);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.home-titulo {
+  font-family: var(--fonte-display);
+  font-size: 1.9rem;
+  color: var(--cor-acento);
+  letter-spacing: 0.04em;
+}
+
+.home-logout {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-sm);
+  color: var(--cor-texto-fraco);
+  cursor: pointer;
+  padding: var(--espaco-sm);
+  display: flex;
+  align-items: center;
+  transition: var(--transicao);
+}
+
+.home-logout:hover { border-color: var(--cor-erro); color: var(--cor-erro); }
+.home-logout svg { width: 20px; height: 20px; }
+
+.home-prox-ag {
+  margin-bottom: var(--espaco-xl);
+}
+
+.home-card-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--cor-acento);
+  margin-bottom: var(--espaco-sm);
+}
+
+.home-prox-nome {
+  font-family: var(--fonte-display);
+  font-size: 1.6rem;
+  margin-bottom: var(--espaco-xs);
+}
+
+.home-prox-detalhes {
+  display: flex;
+  gap: var(--espaco-sm);
+  font-size: 0.85rem;
+  color: var(--cor-texto-fraco);
+  margin-bottom: var(--espaco-sm);
+}
+
+.home-secao-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--cor-texto-fraco);
+  margin-bottom: var(--espaco-md);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-sm);
+}
+
+.home-grid > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.home-menu-card {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-lg) var(--espaco-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-sm);
+  cursor: pointer;
+  transition: var(--transicao);
+  font-family: var(--fonte-corpo);
+}
+
+.home-menu-card:hover {
+  border-color: var(--cor-acento);
+  background: color-mix(in srgb, var(--cor-acento) 5%, var(--cor-fundo-card));
+}
+
+.home-menu-card:active { transform: scale(0.97); }
+
+.home-menu-icone { font-size: 1.8rem; }
+
+.home-menu-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  text-align: center;
+  letter-spacing: 0.03em;
+}

@@ -1,0 +1,47 @@
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaco-sm);
+  font-size: 0.9rem;
+  padding: var(--espaco-xs) 0;
+}
+
+.payment-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--espaco-xs);
+}
+
+.payment-total-valor {
+  font-family: var(--fonte-display);
+  font-size: 1.8rem;
+  color: var(--cor-acento);
+}
+
+.payment-metodos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-sm);
+  margin-top: var(--espaco-md);
+}
+
+.payment-metodo-btn {
+  padding: var(--espaco-md);
+  border: 1.5px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  background: var(--cor-fundo-input);
+  color: var(--cor-texto);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transicao);
+  font-family: var(--fonte-corpo);
+}
+
+.payment-metodo-btn:hover { border-color: var(--cor-acento); }
+.payment-metodo-btn.ativo {
+  border-color: var(--cor-acento);
+  background: color-mix(in srgb, var(--cor-acento) 12%, var(--cor-fundo-card));
+  color: var(--cor-acento);
+}

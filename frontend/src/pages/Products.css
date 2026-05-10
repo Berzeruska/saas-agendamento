@@ -1,0 +1,59 @@
+.produtos-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--espaco-md) var(--espaco-lg);
+}
+
+.produtos-info { flex: 1; }
+.produtos-nome { font-weight: 600; margin-bottom: 2px; }
+.produtos-preco { font-family: var(--fonte-display); font-size: 1.2rem; color: var(--cor-acento); }
+
+.produtos-controles {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-sm);
+}
+
+.produtos-btn-qtd {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cor-borda);
+  background: var(--cor-fundo-input);
+  color: var(--cor-texto);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transicao);
+  font-family: var(--fonte-corpo);
+}
+
+.produtos-btn-qtd:hover { border-color: var(--cor-acento); }
+.produtos-btn-add { border-color: var(--cor-acento); color: var(--cor-acento); }
+
+.produtos-qtd-atual {
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
+.produtos-btn-adicionar {
+  width: auto;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+}
+
+.produtos-carrinho-flutuante {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 420px;
+  z-index: 50;
+  animation: slideUp 0.3s ease;
+}

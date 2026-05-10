@@ -1,0 +1,262 @@
+.admin-pagina {
+  padding-bottom: var(--espaco-xl);
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--espaco-xl);
+}
+
+.admin-sub {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--cor-texto-fraco);
+  text-transform: uppercase;
+}
+
+.admin-titulo {
+  font-family: var(--fonte-display);
+  font-size: 2.2rem;
+  color: var(--cor-acento);
+}
+
+.admin-secao-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--cor-texto-fraco);
+  text-transform: uppercase;
+  margin-bottom: var(--espaco-md);
+}
+
+/* Stats */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--espaco-sm);
+  margin-bottom: var(--espaco-lg);
+}
+
+.admin-stat-card {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-md);
+  padding: var(--espaco-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-stat-numero {
+  font-family: var(--fonte-display);
+  font-size: 2rem;
+  color: var(--cor-acento);
+  line-height: 1;
+}
+
+.admin-stat-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--cor-texto-fraco);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Menu admin */
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaco-sm);
+}
+
+.admin-menu-card {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  padding: var(--espaco-lg) var(--espaco-md);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  cursor: pointer;
+  transition: var(--transicao);
+  position: relative;
+  font-family: var(--fonte-corpo);
+  text-align: left;
+}
+
+.admin-menu-card:hover {
+  border-color: var(--cor-acento);
+  background: color-mix(in srgb, var(--cor-acento) 5%, var(--cor-fundo-card));
+}
+
+.admin-menu-card:active { transform: scale(0.98); }
+
+.admin-menu-icone { font-size: 1.6rem; margin-bottom: 4px; }
+.admin-menu-label { font-size: 0.9rem; font-weight: 700; color: var(--cor-texto); }
+.admin-menu-desc  { font-size: 0.72rem; color: var(--cor-texto-fraco); }
+
+.admin-menu-badge {
+  position: absolute;
+  top: var(--espaco-sm);
+  right: var(--espaco-sm);
+  background: var(--cor-erro);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Agenda cards */
+.admin-ag-card {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-md);
+  padding: var(--espaco-md) var(--espaco-lg);
+}
+
+.admin-ag-hora {
+  font-family: var(--fonte-display);
+  font-size: 1.4rem;
+  color: var(--cor-acento);
+  min-width: 50px;
+}
+
+.admin-ag-info { flex: 1; }
+.admin-ag-cliente { font-weight: 700; font-size: 0.95rem; }
+.admin-ag-servico { font-size: 0.8rem; color: var(--cor-texto-fraco); }
+
+.admin-ag-detalhe { display: flex; flex-direction: column; gap: var(--espaco-sm); }
+.admin-ag-detalhe-topo { display: flex; justify-content: space-between; align-items: center; }
+.admin-ag-hora-grande { font-family: var(--fonte-display); font-size: 2rem; color: var(--cor-acento); }
+
+/* Clientes */
+.admin-cliente-card {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-md);
+  padding: var(--espaco-md) var(--espaco-lg);
+}
+
+.admin-cliente-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cor-acento) 20%, var(--cor-fundo-card));
+  border: 1.5px solid var(--cor-acento);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--cor-acento);
+  flex-shrink: 0;
+}
+
+.admin-cliente-info { flex: 1; }
+.admin-cliente-nome { font-weight: 700; font-size: 0.95rem; }
+.admin-cliente-tel  { font-size: 0.82rem; color: var(--cor-texto-fraco); }
+.admin-cliente-data { font-size: 0.75rem; color: var(--cor-texto-fraco); }
+
+/* Estoque */
+.admin-estoque-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--espaco-md) var(--espaco-lg);
+}
+
+.admin-estoque-alerta { border-color: rgba(224,161,64,0.4); }
+.admin-estoque-info { flex: 1; }
+.admin-estoque-nome { font-weight: 600; }
+.admin-estoque-preco { font-size: 0.85rem; color: var(--cor-texto-fraco); }
+
+.admin-estoque-controles {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-sm);
+}
+
+.admin-estoque-qtd {
+  font-size: 1.1rem;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+}
+
+.admin-estoque-qtd.alerta { color: var(--cor-aviso); }
+
+/* Filtros */
+.admin-filtros {
+  display: flex;
+  gap: var(--espaco-sm);
+  margin-bottom: var(--espaco-lg);
+  overflow-x: auto;
+}
+
+.admin-filtro-btn {
+  padding: 6px 16px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 20px;
+  background: var(--cor-fundo-card);
+  color: var(--cor-texto-fraco);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transicao);
+  white-space: nowrap;
+  font-family: var(--fonte-corpo);
+}
+
+.admin-filtro-btn.ativo {
+  border-color: var(--cor-acento);
+  color: var(--cor-acento);
+  background: color-mix(in srgb, var(--cor-acento) 10%, var(--cor-fundo-card));
+}
+
+/* Nav admin bottom */
+.admin-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--cor-fundo-card) 95%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--cor-borda);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.admin-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--cor-texto-fraco);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: var(--transicao);
+  font-family: var(--fonte-corpo);
+}
+
+.admin-nav-item.ativo { color: var(--cor-acento); }
+.admin-nav-item svg { width: 20px; height: 20px; }

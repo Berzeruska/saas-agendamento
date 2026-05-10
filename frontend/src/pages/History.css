@@ -1,0 +1,31 @@
+.history-card { gap: var(--espaco-sm); display: flex; flex-direction: column; }
+
+.history-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.history-servico { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+.history-data { font-size: 0.82rem; color: var(--cor-texto-fraco); }
+.history-notas {
+  font-size: 0.82rem;
+  color: var(--cor-texto-medio);
+  padding: var(--espaco-sm) var(--espaco-md);
+  background: var(--cor-fundo-input);
+  border-radius: var(--raio-sm);
+  white-space: pre-line;
+}
+
+.history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--espaco-xs);
+}
+
+.history-preco {
+  font-family: var(--fonte-display);
+  font-size: 1.3rem;
+  color: var(--cor-acento);
+}
