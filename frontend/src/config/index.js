@@ -34,13 +34,16 @@ export const DEFAULT_CONFIG = {
 export const config = { ...DEFAULT_CONFIG }
 
 export function getTenantSlug() {
+  // Env var tem prioridade — funciona em dev e em produção (Vercel, etc.)
+  if (import.meta.env.VITE_TENANT_SLUG) return import.meta.env.VITE_TENANT_SLUG
+
   const hostname = window.location.hostname
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Em dev: usa variável de ambiente ou parâmetro de URL
-    return import.meta.env.VITE_TENANT_SLUG || new URLSearchParams(window.location.search).get('tenant') || null
+    return new URLSearchParams(window.location.search).get('tenant') || null
   }
+  // Fallback: extrai slug do subdomínio (ex: meutenant.meudominio.com)
   const parts = hostname.split('.')
-  return parts.length >= 2 ? parts[0] : null
+  return parts.length >= 3 ? parts[0] : null
 }
 
 export async function loadTenantConfig() {

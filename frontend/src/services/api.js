@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { getTenantSlug } from '../config/index.js'
 
+// TODO: remover após confirmar slug em produção
+console.log('tenant slug:', import.meta.env.VITE_TENANT_SLUG)
+
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const api = axios.create({
