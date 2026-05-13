@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { productsAPI, adminAPI, briefingsAPI } from '../../services/api'
 
 export default function ModalConcluirSessao({ briefing, produtos, onConcluir, onFechar }) {
+  console.log('[ModalConcluirSessao] aberto — produtos recebidos:', produtos?.length, produtos?.map(p => p.nome))
   const [qtdUsada, setQtdUsada] = useState({})
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro]         = useState('')

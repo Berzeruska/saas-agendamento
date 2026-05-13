@@ -219,6 +219,8 @@ def financeiro():
     total_gastos  = round(sum(float(row.get("valor") or 0) for row in (gastos_mes.data or [])), 2)
     lucro_liquido = round(total_mes - total_gastos, 2)
 
+    print(f"[financeiro] tenant={g.tenant_id} mes={mes}/{ano} range={start}→{end} pagamentos={len(lista)} total_mes={total_mes} total_geral={total_geral}", flush=True)
+
     return jsonify({
         "total_mes":     total_mes,
         "total_geral":   total_geral,

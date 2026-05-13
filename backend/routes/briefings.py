@@ -384,6 +384,7 @@ def agenda_mes():
             .execute()
         )
         datas = list({b["data_proposta"] for b in (res.data or []) if b.get("data_proposta")})
+        print(f"[agenda_mes] mes={mes} ano={ano} tenant={g.tenant_id} → {len(datas)} datas: {datas}", flush=True)
         return jsonify({"datas": datas})
     except Exception as e:
         print(f"[agenda_mes] ERRO mes={mes} ano={ano} tenant={g.tenant_id}: {e}\n{traceback.format_exc()}", flush=True)
@@ -599,6 +600,7 @@ def confirmar_pagamento(briefing_id):
         return jsonify({"error": "Registre o valor antes de confirmar o pagamento"}), 409
 
     hoje = datetime.now().strftime("%Y-%m-%d")
+    print(f"[pagamento] salvando briefing={briefing_id} tenant={g.tenant_id} data_pagamento={hoje} valor={briefing.data['valor_combinado']}", flush=True)
     res = (
         db.table("briefings")
         .update({"pago": True, "data_pagamento": hoje})
@@ -606,8 +608,10 @@ def confirmar_pagamento(briefing_id):
         .eq("tenant_id", g.tenant_id)
         .execute()
     )
+    saved = res.data[0] if res.data else {}
+    print(f"[pagamento] resultado pago={saved.get('pago')} data_pagamento={saved.get('data_pagamento')}", flush=True)
     _audit("pagamento_confirmado", {"briefing_id": briefing_id, "valor": str(briefing.data["valor_combinado"])})
-    return jsonify(res.data[0] if res.data else {})
+    return jsonify(saved)
 
 
 @briefings_bp.route("/<briefing_id>/resposta", methods=["PUT"])

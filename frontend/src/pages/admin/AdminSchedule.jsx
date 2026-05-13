@@ -72,12 +72,13 @@ export default function AdminSchedule() {
   const [erroRe, setErroRe]                 = useState('')
 
   useEffect(() => {
+    console.log('[AdminSchedule] isBriefingMode:', config.camposExtras)
     servicesAPI.list()
       .then(({ data }) => setServicos(data))
       .catch(() => {})
     productsAPI.list()
-      .then(({ data }) => setProdutosEstoque(data || []))
-      .catch(() => {})
+      .then(({ data }) => { console.log('[AdminSchedule] produtos carregados:', data?.length); setProdutosEstoque(data || []) })
+      .catch((e) => console.warn('[AdminSchedule] erro ao carregar produtos:', e.message))
   }, [])
 
   useEffect(() => {

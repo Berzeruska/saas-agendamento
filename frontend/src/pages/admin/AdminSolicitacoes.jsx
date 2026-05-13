@@ -98,8 +98,8 @@ export default function AdminSolicitacoes() {
 
   useEffect(() => {
     productsAPI.list()
-      .then(({ data }) => setProdutosEstoque(data || []))
-      .catch(() => {})
+      .then(({ data }) => { console.log('[AdminSolicitacoes] produtos carregados:', data?.length); setProdutosEstoque(data || []) })
+      .catch((e) => console.warn('[AdminSolicitacoes] erro ao carregar produtos:', e.message))
   }, [])
 
   async function carregar() {
