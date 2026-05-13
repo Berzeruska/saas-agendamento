@@ -47,14 +47,25 @@ export function getTenantSlug() {
 }
 
 export async function loadTenantConfig() {
-  const slug = getTenantSlug()
-  const headers = { 'Content-Type': 'application/json' }
-  if (slug) headers['X-Tenant-Slug'] = slug
+  // Env var direta tem prioridade absoluta; getTenantSlug() é fallback para subdomínio
+  const slug = import.meta.env.VITE_TENANT_SLUG || getTenantSlug()
+
+  // TODO: remover após confirmar slug em produção
+  console.log('[tenant] loadTenantConfig slug:', slug)
 
   try {
-    const res = await fetch(`${API_URL}/api/tenant/config`, { headers })
+    const res = await fetch(`${API_URL}/api/tenant/config`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(slug && { 'X-Tenant-Slug': slug }),
+      },
+    })
     if (!res.ok) return
     const data = await res.json()
+    if (data._tenantNotFound) {
+      console.warn('[tenant] tenant não encontrado para slug:', slug)
+      return
+    }
     // Merge profundo: mantém fallback para campos ausentes
     Object.assign(config, data)
     if (data.cores) Object.assign(config.cores, data.cores)
