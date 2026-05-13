@@ -79,12 +79,6 @@ export default function AdminSolicitacoes() {
   const [modalPagB, setModalPagB]             = useState(null)
   const [confirmandoPag, setConfirmandoPag]   = useState(false)
 
-  // segunda etapa: materiais
-  const [etapaMateriais, setEtapaMateriais]   = useState(false)
-  const [valorMateriais, setValorMateriais]   = useState('')
-  const [erroPagMateriais, setErroPagMat]     = useState('')
-  const [salvandoMat, setSalvandoMat]         = useState(false)
-
   // modal concluir sessão com abate no estoque
   const [modalConcluirB, setModalConcluirB]   = useState(null)
   const [produtosEstoque, setProdutosEstoque] = useState([])
@@ -187,33 +181,11 @@ export default function AdminSolicitacoes() {
       setBriefings(prev => prev.map(b =>
         b.id === modalPagB.id ? { ...b, pago: data.pago, data_pagamento: data.data_pagamento } : b
       ))
-      setEtapaMateriais(true)
+      setModalPagB(null)
     } catch (e) {
       setModalPagB(prev => ({ ...prev, _erro: e.message }))
     } finally {
       setConfirmandoPag(false)
-    }
-  }
-
-  function fecharPagModal() {
-    setModalPagB(null)
-    setEtapaMateriais(false)
-    setValorMateriais('')
-    setErroPagMat('')
-  }
-
-  async function registrarMateriais() {
-    const valor = parseFloat((valorMateriais || '').replace(',', '.'))
-    if (!valor || valor <= 0) { setErroPagMat('Informe um valor válido.'); return }
-    setSalvandoMat(true)
-    setErroPagMat('')
-    try {
-      await adminAPI.registrarGasto({ valor, briefing_id: modalPagB.id, descricao: 'Materiais sessão' })
-      fecharPagModal()
-    } catch (e) {
-      setErroPagMat(e.message)
-    } finally {
-      setSalvandoMat(false)
     }
   }
 
@@ -599,7 +571,9 @@ export default function AdminSolicitacoes() {
           }}
           onClick={e => e.target === e.currentTarget && !cancelando && setModalCancelarId(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => setModalCancelarId(null)} disabled={cancelando}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
               CANCELAR SOLICITAÇÃO
             </p>
@@ -642,7 +616,9 @@ export default function AdminSolicitacoes() {
           }}
           onClick={e => e.target === e.currentTarget && !confirmandoData && setModalConfirmarB(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => setModalConfirmarB(null)} disabled={confirmandoData}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
               CONFIRMAR SESSÃO
             </p>
@@ -695,81 +671,44 @@ export default function AdminSolicitacoes() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 1000, padding: 16,
           }}
-          onClick={e => e.target === e.currentTarget && !confirmandoPag && !salvandoMat && fecharPagModal()}
+          onClick={e => e.target === e.currentTarget && !confirmandoPag && setModalPagB(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
-
-            {!etapaMateriais ? (
-              <>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
-                  CONFIRMAR PAGAMENTO
-                </p>
-                <h3 style={{ marginBottom: 4 }}>{modalPagB.clientes?.nome}</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--cor-texto-fraco)', marginBottom: 20 }}>
-                  {modalPagB.estilo || 'Tattoo'}{modalPagB.local_corpo ? ` · ${modalPagB.local_corpo}` : ''}
-                </p>
-                <div style={{
-                  background: 'var(--cor-fundo-input)',
-                  borderRadius: 8, padding: '12px 16px', marginBottom: 20,
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--cor-texto-fraco)' }}>Valor combinado</span>
-                  <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--cor-acento)' }}>
-                    R$ {Number(modalPagB.valor_combinado).toFixed(2)}
-                  </span>
-                </div>
-                {modalPagB._erro && (
-                  <div className="alerta alerta-erro" style={{ marginBottom: 16 }}>{modalPagB._erro}</div>
-                )}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-ghost" style={{ flex: 1 }} onClick={fecharPagModal} disabled={confirmandoPag}>
-                    Cancelar
-                  </button>
-                  <button
-                    className="btn btn-primario"
-                    style={{ flex: 1, background: '#22c55e', border: 'none' }}
-                    onClick={executarPagamento}
-                    disabled={confirmandoPag}
-                  >
-                    {confirmandoPag ? '...' : '✓ Confirmar'}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
-                  REGISTRAR MATERIAIS
-                </p>
-                <h3 style={{ marginBottom: 4 }}>Registrar materiais usados?</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--cor-texto-fraco)', marginBottom: 20 }}>
-                  Informe o custo dos materiais desta sessão (opcional)
-                </p>
-                <div className="input-grupo" style={{ marginBottom: 16 }}>
-                  <input
-                    className="input-campo"
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0,00"
-                    value={valorMateriais}
-                    onChange={e => { setValorMateriais(e.target.value.replace(/[^0-9.,]/g, '')); setErroPagMat('') }}
-                    autoFocus
-                    style={{ fontSize: '1.1rem', textAlign: 'center', letterSpacing: '0.05em' }}
-                  />
-                </div>
-                {erroPagMateriais && (
-                  <div className="alerta alerta-erro" style={{ marginBottom: 16 }}>{erroPagMateriais}</div>
-                )}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-ghost" style={{ flex: 1 }} onClick={fecharPagModal} disabled={salvandoMat}>
-                    Pular
-                  </button>
-                  <button className="btn btn-primario" style={{ flex: 1 }} onClick={registrarMateriais} disabled={salvandoMat}>
-                    {salvandoMat ? '...' : 'Registrar'}
-                  </button>
-                </div>
-              </>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => setModalPagB(null)} disabled={confirmandoPag}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
+              CONFIRMAR PAGAMENTO
+            </p>
+            <h3 style={{ marginBottom: 4 }}>{modalPagB.clientes?.nome}</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--cor-texto-fraco)', marginBottom: 20 }}>
+              {modalPagB.estilo || 'Tattoo'}{modalPagB.local_corpo ? ` · ${modalPagB.local_corpo}` : ''}
+            </p>
+            <div style={{
+              background: 'var(--cor-fundo-input)',
+              borderRadius: 8, padding: '12px 16px', marginBottom: 20,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--cor-texto-fraco)' }}>Valor combinado</span>
+              <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--cor-acento)' }}>
+                R$ {Number(modalPagB.valor_combinado).toFixed(2)}
+              </span>
+            </div>
+            {modalPagB._erro && (
+              <div className="alerta alerta-erro" style={{ marginBottom: 16 }}>{modalPagB._erro}</div>
             )}
-
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setModalPagB(null)} disabled={confirmandoPag}>
+                Cancelar
+              </button>
+              <button
+                className="btn btn-primario"
+                style={{ flex: 1, background: '#22c55e', border: 'none' }}
+                onClick={executarPagamento}
+                disabled={confirmandoPag}
+              >
+                {confirmandoPag ? '...' : '✓ Confirmar'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -785,7 +724,9 @@ export default function AdminSolicitacoes() {
           }}
           onClick={e => e.target === e.currentTarget && setModalValorB(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => { setModalValorB(null); setErroValorModal('') }}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
               VALOR COMBINADO
             </p>
@@ -844,10 +785,13 @@ export default function AdminSolicitacoes() {
           onClick={e => e.target === e.currentTarget && setModalB(null)}
         >
           <div style={{
+            position: 'relative',
             background: 'var(--cor-fundo-card)',
             borderRadius: 16, padding: 24,
             width: '100%', maxWidth: 420,
           }}>
+            <button type="button" onClick={() => setModalB(null)}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
               {!modalB.data_proposta && modalB.status === 'aguardando' ? 'DEFINIR DATA' : 'REAGENDAR'}
             </p>

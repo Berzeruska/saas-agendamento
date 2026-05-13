@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { adminAPI } from '../../services/api'
+import { adminAPI, briefingsAPI } from '../../services/api'
 import { config } from '../../config/index.js'
 import HelpBox from '../../components/HelpBox'
 import './Admin.css'
@@ -23,12 +23,19 @@ export default function AdminDashboard() {
   const { logoutAdmin } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const [dados, setDados] = useState(null)
-  const [carregando, setCarregando] = useState(true)
+  const [dados, setDados]               = useState(null)
+  const [aguardandoCount, setAguardandoCount] = useState(0)
+  const [carregando, setCarregando]     = useState(true)
 
   useEffect(() => {
-    adminAPI.dashboard()
-      .then(({ data }) => setDados(data))
+    Promise.all([
+      adminAPI.dashboard(),
+      briefingsAPI.list('aguardando'),
+    ])
+      .then(([{ data: dash }, { data: pending }]) => {
+        setDados(dash)
+        setAguardandoCount(Array.isArray(pending) ? pending.length : 0)
+      })
       .catch(() => {})
       .finally(() => setCarregando(false))
   }, [])
@@ -110,6 +117,9 @@ export default function AdminDashboard() {
                 {item.path === '/admin/estoque' && alertas.length > 0 && (
                   <span className="admin-menu-badge">{alertas.length}</span>
                 )}
+                {item.path === '/admin/solicitacoes' && aguardandoCount > 0 && (
+                  <span className="admin-menu-badge acento">{aguardandoCount}</span>
+                )}
               </button>
             ))}
           </div>
@@ -124,7 +134,12 @@ export default function AdminDashboard() {
             className={`admin-nav-item ${pathname === item.path ? 'ativo' : ''}`}
             onClick={() => navigate(item.path)}
           >
-            <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+            <span style={{ position: 'relative', display: 'inline-block' }}>
+              <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+              {item.path === '/admin/solicitacoes' && aguardandoCount > 0 && (
+                <span className="admin-nav-badge">{aguardandoCount}</span>
+              )}
+            </span>
             <span>{item.label}</span>
           </button>
         ))}

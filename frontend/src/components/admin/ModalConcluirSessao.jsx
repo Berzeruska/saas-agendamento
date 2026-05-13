@@ -65,7 +65,9 @@ export default function ModalConcluirSessao({ briefing, produtos, onConcluir, on
       }}>
 
         {/* Cabeçalho */}
-        <div style={{ padding: '24px 24px 20px' }}>
+        <div style={{ position: 'relative', padding: '24px 24px 20px' }}>
+          <button type="button" onClick={() => !salvando && onFechar()}
+            style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: salvando ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1, opacity: salvando ? 0.5 : 1 }}>×</button>
           <p style={{
             fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.28em',
             color: 'var(--cor-texto-fraco)', marginBottom: 10,

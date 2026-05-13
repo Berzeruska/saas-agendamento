@@ -259,4 +259,29 @@
 }
 
 .admin-nav-item.ativo { color: var(--cor-acento); }
+
+/* Badge numérico no bottom nav */
+.admin-nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: var(--cor-acento);
+  color: #fff;
+  border-radius: 50%;
+  min-width: 16px;
+  height: 16px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* Variante roxa do badge nos cards do menu */
+.admin-menu-badge.acento {
+  background: var(--cor-acento);
+}
 .admin-nav-item svg { width: 20px; height: 20px; }

@@ -62,6 +62,12 @@ export default function AdminSchedule() {
   const [cancelando, setCancelando]         = useState(false)
   const [erroCancelar, setErroCancelar]     = useState('')
 
+  // modal informar valor (briefing mode)
+  const [modalValorS, setModalValorS]       = useState(null)
+  const [valorInputS, setValorInputS]       = useState('')
+  const [erroValorS, setErroValorS]         = useState('')
+  const [salvandoValorS, setSalvandoValorS] = useState(false)
+
   // modal reagendar (briefing mode)
   const [modalReagendar, setModalReagendar] = useState(null)
   const [formDiaRe, setFormDiaRe]           = useState('')
@@ -135,6 +141,24 @@ export default function AdminSchedule() {
       recarregarDia(dataSel)
     } catch (err) {
       alert(err.message)
+    }
+  }
+
+  async function registrarValorAgenda(e) {
+    e.preventDefault()
+    const valor = parseFloat((valorInputS || '').replace(',', '.'))
+    if (!valor || valor <= 0) { setErroValorS('Informe um valor válido.'); return }
+    setSalvandoValorS(true)
+    setErroValorS('')
+    try {
+      await briefingsAPI.registrarValor(modalValorS.id, valor)
+      setAgs(prev => prev.map(b => b.id === modalValorS.id ? { ...b, valor_combinado: valor } : b))
+      setModalValorS(null)
+      setValorInputS('')
+    } catch (e) {
+      setErroValorS(e.message)
+    } finally {
+      setSalvandoValorS(false)
     }
   }
 
@@ -422,6 +446,21 @@ export default function AdminSchedule() {
                       Cancelar
                     </button>
                   </div>
+                  <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--cor-borda)' }}>
+                    {b.valor_combinado ? (
+                      <p style={{ fontSize: '0.82rem', color: 'var(--cor-texto-fraco)' }}>
+                        Valor: <strong style={{ color: 'var(--cor-acento)' }}>R$ {Number(b.valor_combinado).toFixed(2)}</strong>
+                      </p>
+                    ) : (
+                      <button
+                        className="btn btn-ghost"
+                        style={{ width: '100%', padding: '8px', fontSize: '0.82rem' }}
+                        onClick={() => { setValorInputS(''); setErroValorS(''); setModalValorS(b) }}
+                      >
+                        Informar valor
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             : ags.map(ag => (
@@ -482,7 +521,9 @@ export default function AdminSchedule() {
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
           onClick={e => e.target === e.currentTarget && !cancelando && setModalCancelar(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => setModalCancelar(null)} disabled={cancelando}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.28em', color: 'var(--cor-texto-fraco)', marginBottom: 10 }}>
               CANCELAR SESSÃO
             </p>
@@ -527,13 +568,56 @@ export default function AdminSchedule() {
         </div>
       )}
 
+      {/* Modal informar valor (briefing mode) */}
+      {modalValorS && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
+          onClick={e => e.target === e.currentTarget && !salvandoValorS && setModalValorS(null)}
+        >
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 360 }}>
+            <button type="button" onClick={() => setModalValorS(null)} disabled={salvandoValorS}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
+            <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
+              VALOR COMBINADO
+            </p>
+            <h3 style={{ marginBottom: 20 }}>{modalValorS.clientes?.nome}</h3>
+            <form onSubmit={registrarValorAgenda} className="stack">
+              <div className="input-grupo">
+                <label>Valor (R$)</label>
+                <input
+                  className="input-campo"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={valorInputS}
+                  onChange={e => { setValorInputS(e.target.value.replace(/[^0-9.,]/g, '')); setErroValorS('') }}
+                  autoFocus
+                  style={{ fontSize: '1.1rem', textAlign: 'center', letterSpacing: '0.05em' }}
+                />
+              </div>
+              {erroValorS && <div className="alerta alerta-erro">{erroValorS}</div>}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setModalValorS(null)} disabled={salvandoValorS}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primario" style={{ flex: 1 }} disabled={salvandoValorS}>
+                  {salvandoValorS ? '...' : 'Confirmar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal reagendar (briefing mode) */}
       {modalReagendar && (
         <div
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 }}
           onClick={e => e.target === e.currentTarget && setModalReagendar(null)}
         >
-          <div style={{ background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 420 }}>
+          <div style={{ position: 'relative', background: 'var(--cor-fundo-card)', borderRadius: 16, padding: 24, width: '100%', maxWidth: 420 }}>
+            <button type="button" onClick={() => setModalReagendar(null)} disabled={salvandoRe}
+              style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: 'var(--cor-fundo-input)', border: '1px solid var(--cor-borda)', color: 'var(--cor-texto-fraco)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', lineHeight: 1 }}>×</button>
             <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.18em', color: 'var(--cor-texto-fraco)', marginBottom: 4 }}>
               REAGENDAR
             </p>
