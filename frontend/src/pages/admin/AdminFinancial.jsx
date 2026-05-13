@@ -1,102 +1,142 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ordersAPI } from '../../services/api'
+import { adminAPI } from '../../services/api'
+import HelpBox from '../../components/HelpBox'
 import './Admin.css'
+
+const MESES = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+]
 
 export default function AdminFinancial() {
   const navigate = useNavigate()
-  const [pedidos, setPedidos] = useState([])
+  const hoje = new Date()
+  const [mes, setMes]         = useState(hoje.getMonth() + 1)
+  const [ano, setAno]         = useState(hoje.getFullYear())
+  const [dados, setDados]     = useState(null)
   const [carregando, setCarregando] = useState(true)
-  const [filtro, setFiltro] = useState('todos')
 
-  useEffect(() => {
-    ordersAPI.list()
-      .then(({ data }) => setPedidos(data))
-      .catch(console.error)
-      .finally(() => setCarregando(false))
-  }, [])
+  useEffect(() => { carregar() }, [mes, ano])
 
-  async function confirmar(id) {
+  async function carregar() {
+    setCarregando(true)
     try {
-      await ordersAPI.confirm(id)
-      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status_pagamento: 'pago' } : p))
-    } catch (err) {
-      alert(err.message)
+      const { data } = await adminAPI.financeiro(mes, ano)
+      setDados(data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setCarregando(false)
     }
   }
 
-  const filtrados = pedidos.filter(p => filtro === 'todos' || p.status_pagamento === filtro)
-  const totalPago = pedidos.filter(p => p.status_pagamento === 'pago').reduce((s, p) => s + p.total, 0)
-  const totalPendente = pedidos.filter(p => p.status_pagamento === 'pendente').reduce((s, p) => s + p.total, 0)
+  function mudarMes(delta) {
+    let novoMes = mes + delta
+    let novoAno = ano
+    if (novoMes > 12) { novoMes = 1; novoAno++ }
+    if (novoMes < 1)  { novoMes = 12; novoAno-- }
+    setMes(novoMes)
+    setAno(novoAno)
+  }
+
+  const pagamentos = dados?.pagamentos || []
 
   return (
     <div className="pagina admin-pagina">
       <header className="pagina-titulo">
         <button className="auth-voltar" onClick={() => navigate('/admin')}>← Painel</button>
-        <h2>Financeiro</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2>Financeiro</h2>
+          <HelpBox texto="Resumo financeiro mensal. Receita recebida, gastos com materiais e lucro líquido." />
+        </div>
       </header>
 
-      <div className="admin-stats animar-entrada" style={{ marginBottom: 'var(--espaco-lg)', gridTemplateColumns: '1fr 1fr' }}>
+      {/* Seletor de mês */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 'var(--espaco-lg)', justifyContent: 'center' }}>
+        <button className="btn btn-ghost" style={{ padding: '6px 16px', fontSize: '1.1rem' }} onClick={() => mudarMes(-1)}>
+          ‹
+        </button>
+        <p style={{ fontWeight: 700, fontSize: '0.95rem', minWidth: 160, textAlign: 'center' }}>
+          {MESES[mes - 1]} {ano}
+        </p>
+        <button className="btn btn-ghost" style={{ padding: '6px 16px', fontSize: '1.1rem' }} onClick={() => mudarMes(1)}>
+          ›
+        </button>
+      </div>
+
+      {/* Stats — linha 1: receita + geral */}
+      <div className="admin-stats animar-entrada" style={{ marginBottom: 'var(--espaco-md)', gridTemplateColumns: '1fr 1fr' }}>
         <div className="admin-stat-card">
-          <span className="admin-stat-numero" style={{ color: 'var(--cor-sucesso)', fontSize: '1.4rem' }}>
-            R$ {totalPago.toFixed(2)}
+          <span className="admin-stat-numero" style={{ color: 'var(--cor-sucesso)', fontSize: '1.3rem' }}>
+            R$ {dados ? Number(dados.total_mes).toFixed(2) : '—'}
           </span>
-          <span className="admin-stat-label">Recebido</span>
+          <span className="admin-stat-label">Recebido no mês</span>
         </div>
         <div className="admin-stat-card">
-          <span className="admin-stat-numero" style={{ color: 'var(--cor-aviso)', fontSize: '1.4rem' }}>
-            R$ {totalPendente.toFixed(2)}
+          <span className="admin-stat-numero" style={{ fontSize: '1.3rem' }}>
+            R$ {dados ? Number(dados.total_geral).toFixed(2) : '—'}
           </span>
-          <span className="admin-stat-label">Pendente</span>
+          <span className="admin-stat-label">Total geral</span>
         </div>
       </div>
 
-      <div className="admin-filtros animar-entrada delay-1">
-        {['todos', 'pendente', 'pago'].map(f => (
-          <button key={f} className={`admin-filtro-btn ${filtro === f ? 'ativo' : ''}`} onClick={() => setFiltro(f)}>
-            {f === 'todos' ? 'Todos' : f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
+      {/* Stats — linha 2: gastos + lucro */}
+      <div className="admin-stats animar-entrada" style={{ marginBottom: 'var(--espaco-xl)', gridTemplateColumns: '1fr 1fr' }}>
+        <div className="admin-stat-card">
+          <span className="admin-stat-numero" style={{ color: 'var(--cor-erro)', fontSize: '1.3rem' }}>
+            R$ {dados ? Number(dados.total_gastos || 0).toFixed(2) : '—'}
+          </span>
+          <span className="admin-stat-label">Gastos materiais</span>
+        </div>
+        <div className="admin-stat-card">
+          <span className="admin-stat-numero" style={{ color: 'var(--cor-acento)', fontSize: '1.3rem' }}>
+            R$ {dados ? Number(dados.lucro_liquido || 0).toFixed(2) : '—'}
+          </span>
+          <span className="admin-stat-label">Lucro líquido</span>
+        </div>
       </div>
 
-      {carregando && <p className="carregando" style={{ color: 'var(--cor-texto-fraco)' }}>Carregando...</p>}
+      {/* Lista */}
+      <p className="admin-secao-label">
+        PAGAMENTOS — {MESES[mes - 1].toUpperCase()} {ano}
+      </p>
 
-      {!carregando && filtrados.length === 0 && (
-        <div className="card" style={{ textAlign: 'center', padding: 'var(--espaco-xl)' }}>
-          <p style={{ color: 'var(--cor-texto-fraco)' }}>Nenhum pedido encontrado.</p>
-        </div>
+      {carregando && (
+        <p style={{ color: 'var(--cor-texto-fraco)', textAlign: 'center', marginTop: 24 }}>Carregando...</p>
+      )}
+
+      {!carregando && pagamentos.length === 0 && (
+        <div className="alerta alerta-info">Nenhum pagamento registrado neste mês.</div>
       )}
 
       <div className="stack">
-        {filtrados.map((pedido, i) => (
-          <div key={pedido.id} className="card animar-entrada" style={{ animationDelay: `${i * 0.04}s` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--espaco-sm)' }}>
-              <div>
-                <p style={{ fontWeight: 700 }}>{pedido.clientes?.nome}</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--cor-texto-fraco)' }}>
-                  {new Date(pedido.criado_em).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                  {pedido.metodo_pagamento && ` · ${pedido.metodo_pagamento.toUpperCase()}`}
+        {pagamentos.map((p, i) => (
+          <div
+            key={i}
+            className="card animar-entrada"
+            style={{ animationDelay: `${i * 0.04}s`, padding: '14px 16px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 2 }}>
+                  {p.clientes?.nome || 'Cliente'}
+                </p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--cor-texto-fraco)' }}>
+                  {p.estilo || 'Tattoo'}
+                  {p.data_pagamento && (
+                    <> · {new Date(p.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR')}</>
+                  )}
                 </p>
               </div>
-              <span className={`badge badge-${pedido.status_pagamento}`}>{pedido.status_pagamento}</span>
-            </div>
-
-            {pedido.pedido_itens?.map((item, j) => (
-              <p key={j} style={{ fontSize: '0.82rem', color: 'var(--cor-texto-fraco)' }}>
-                {item.produtos?.nome} × {item.quantidade} = R$ {(item.preco_unitario * item.quantidade).toFixed(2)}
-              </p>
-            ))}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--espaco-sm)' }}>
-              <span style={{ fontFamily: 'var(--fonte-display)', fontSize: '1.5rem', color: 'var(--cor-acento)' }}>
-                R$ {Number(pedido.total).toFixed(2)}
+              <span style={{
+                fontFamily: 'var(--fonte-display)',
+                fontSize: '1.25rem',
+                color: 'var(--cor-sucesso)',
+                flexShrink: 0,
+              }}>
+                R$ {Number(p.valor_combinado).toFixed(2)}
               </span>
-              {pedido.status_pagamento === 'pendente' && (
-                <button className="btn btn-primario" style={{ width: 'auto', padding: '8px 16px', fontSize: '0.85rem' }}
-                  onClick={() => confirmar(pedido.id)}>
-                  ✓ Confirmar pagamento
-                </button>
-              )}
             </div>
           </div>
         ))}

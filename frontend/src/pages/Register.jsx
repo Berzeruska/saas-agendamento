@@ -14,8 +14,10 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault()
     setErro('')
-    if (form.senha !== form.confirmar) return setErro('As senhas não conferem')
-    if (form.senha.length < 6) return setErro('Senha deve ter no mínimo 6 caracteres')
+    const digits = form.telefone.replace(/\D/g, '')
+    if (digits.length < 10 || digits.length > 11) return setErro('Telefone inválido. Informe DDD + número (10 ou 11 dígitos).')
+    if (form.senha.length < 6) return setErro('Senha deve ter no mínimo 6 caracteres.')
+    if (form.senha !== form.confirmar) return setErro('As senhas não conferem.')
     setCarregando(true)
     try {
       await registrarCliente({ nome: form.nome, telefone: form.telefone, senha: form.senha })

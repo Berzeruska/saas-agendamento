@@ -139,6 +139,7 @@ def register():
         "telefone": body.telefone,
         "senha_hash": senha_hash,
     }).execute()
+    _audit("cliente_registro", {"nome": body.nome, "telefone": body.telefone})
 
     res2 = (
         db.table("clientes")
@@ -183,11 +184,13 @@ def login():
 
     if not res or not res.data:
         _register_failed_login(ip)
+        _audit("cliente_login_falhou", {"telefone": body.telefone}, ip)
         return jsonify({"error": "Telefone ou senha incorretos"}), 401
 
     cliente = res.data
     if not bcrypt.checkpw(body.senha.encode(), cliente["senha_hash"].encode()):
         _register_failed_login(ip)
+        _audit("cliente_login_falhou", {"telefone": body.telefone}, ip)
         return jsonify({"error": "Telefone ou senha incorretos"}), 401
 
     _clear_failed_logins(ip)

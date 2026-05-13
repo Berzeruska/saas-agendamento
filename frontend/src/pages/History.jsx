@@ -6,10 +6,12 @@ import BottomNav from '../components/layout/BottomNav'
 import './History.css'
 
 const STATUS_BRIEFING = {
-  aguardando: 'Aguardando resposta',
+  aguardando:       'Aguardando resposta',
   proposta_enviada: 'Proposta recebida',
-  confirmado: 'Confirmado',
-  recusado: 'Recusado',
+  confirmado:       'Confirmado',
+  recusado:         'Recusado',
+  cancelado:        'Cancelado',
+  concluido:        'Concluído',
 }
 
 export default function History() {
@@ -93,10 +95,20 @@ export default function History() {
                     </span>
                   </div>
                   {b.descricao && <p className="history-notas">{b.descricao}</p>}
-                  {b.valor_proposto && (
+                  {b.foto_url && (
+                    <img
+                      src={b.foto_url}
+                      alt="Referência"
+                      style={{ maxWidth: '100%', borderRadius: 8, marginTop: 10, display: 'block' }}
+                    />
+                  )}
+                  {b.data_proposta && (
                     <p style={{ fontWeight: 600, color: 'var(--cor-acento)', marginTop: 8 }}>
-                      Proposta: R$ {Number(b.valor_proposto).toFixed(2)}
-                      {b.periodo_sugerido && ` — ${b.periodo_sugerido}`}
+                      {b.status === 'confirmado' ? 'Confirmado: ' : 'Sua sugestão: '}
+                      {new Date(b.data_proposta + 'T00:00:00').toLocaleDateString('pt-BR', {
+                        weekday: 'long', day: '2-digit', month: 'long',
+                      })}
+                      {b.hora_proposta && ` às ${b.hora_proposta.slice(0, 5)}`}
                     </p>
                   )}
                   {b.status === 'proposta_enviada' && (

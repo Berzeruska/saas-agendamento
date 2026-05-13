@@ -3,16 +3,18 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { adminAPI } from '../../services/api'
 import { config } from '../../config/index.js'
+import HelpBox from '../../components/HelpBox'
 import './Admin.css'
 
 const NAV_BASE = [
-  { path: '/admin',           label: 'Início',    icon: '🏠' },
-  { path: '/admin/agenda',    label: 'Agenda',    icon: '📅' },
-  { path: '/admin/clientes',  label: 'Clientes',  icon: '👥' },
-  { path: '/admin/servicos',  label: 'Serviços',  icon: '✍' },
-  { path: '/admin/estoque',   label: 'Estoque',   icon: '📦' },
-  { path: '/admin/financeiro',label: 'Financeiro',icon: '💰' },
-  { path: '/admin/exportar',  label: 'Exportar',  icon: '💾' },
+  { path: '/admin',             label: 'Início',       icon: '🏠' },
+  { path: '/admin/agenda',      label: 'Agenda',       icon: '📅' },
+  { path: '/admin/solicitacoes',label: 'Solicitações', icon: '📋' },
+  { path: '/admin/historico',   label: 'Histórico',   icon: '📁' },
+  { path: '/admin/clientes',    label: 'Clientes',     icon: '👥' },
+  { path: '/admin/estoque',     label: 'Materiais',    icon: '📦' },
+  { path: '/admin/financeiro',  label: 'Financeiro',   icon: '💰' },
+  { path: '/admin/exportar',    label: 'Exportar',     icon: '💾' },
 ]
 
 export default function AdminDashboard() {
@@ -42,6 +44,7 @@ export default function AdminDashboard() {
             <p className="admin-sub">PAINEL</p>
             <h2 className="admin-titulo">{config.nome}</h2>
           </div>
+          <HelpBox texto="Visão geral do estúdio. Acompanhe sessões do dia, clientes ativos e receita da semana." />
           <button className="home-logout" onClick={logoutAdmin} title="Sair">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminAPI } from '../../services/api'
+import HelpBox from '../../components/HelpBox'
 import './Admin.css'
 
 export default function AdminExport() {
@@ -36,7 +37,10 @@ export default function AdminExport() {
     <div className="pagina admin-pagina">
       <header className="pagina-titulo">
         <button className="auth-voltar" onClick={() => navigate('/admin')}>← Painel</button>
-        <h2>Exportar Dados</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h2>Exportar Dados</h2>
+          <HelpBox texto="Baixe seus dados em CSV para guardar backup ou usar em planilhas." />
+        </div>
       </header>
 
       <div className="stack animar-entrada">

@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+import uuid
+from datetime import date, datetime, timedelta
 from flask import Blueprint, request, jsonify, g
 from database import get_db
 from middleware.auth import require_admin
@@ -51,6 +52,180 @@ def toggle_client(client_id):
     novo = not cliente.data["ativo"]
     db.table("clientes").update({"ativo": novo}).eq("id", client_id).execute()
     return jsonify({"ativo": novo})
+
+
+@admin_bp.route("/clients/<client_id>/briefings", methods=["GET"])
+@require_tenant
+@require_admin
+def client_briefings(client_id):
+    try:
+        from uuid import UUID
+        UUID(str(client_id))
+    except ValueError:
+        return jsonify({"error": "ID inválido"}), 400
+    db = get_db()
+    res = (
+        db.table("briefings")
+        .select("id, estilo, local_corpo, tamanho_aprox, status, criado_em, data_proposta, hora_proposta")
+        .eq("cliente_id", client_id)
+        .eq("tenant_id", g.tenant_id)
+        .order("criado_em", desc=True)
+        .limit(20)
+        .execute()
+    )
+    return jsonify(res.data or [])
+
+
+@admin_bp.route("/clients/<client_id>/profile", methods=["GET"])
+@require_tenant
+@require_admin
+def client_profile(client_id):
+    db = get_db()
+    cliente = (
+        db.table("clientes")
+        .select("id, nome, telefone, email, data_cadastro")
+        .eq("id", client_id)
+        .eq("tenant_id", g.tenant_id)
+        .maybe_single()
+        .execute()
+    )
+    if not cliente.data:
+        return jsonify({"error": "Cliente não encontrado"}), 404
+
+    ags_concluidos = (
+        db.table("agendamentos")
+        .select("id", count="exact")
+        .eq("cliente_id", client_id)
+        .eq("tenant_id", g.tenant_id)
+        .eq("status", "concluido")
+        .execute()
+    )
+    briefings_ok = (
+        db.table("briefings")
+        .select("id, estilo")
+        .eq("cliente_id", client_id)
+        .eq("tenant_id", g.tenant_id)
+        .in_("status", ["confirmado", "concluido"])
+        .execute()
+    )
+
+    estilos = list({b["estilo"] for b in (briefings_ok.data or []) if b.get("estilo")})
+    sessoes = (ags_concluidos.count or 0) + len(briefings_ok.data or [])
+
+    return jsonify({
+        **cliente.data,
+        "sessoes_feitas": sessoes,
+        "estilos": estilos,
+        "total_gasto": 0,
+    })
+
+
+@admin_bp.route("/materiais/gastos", methods=["GET"])
+@require_tenant
+@require_admin
+def listar_gastos_materiais():
+    hoje = datetime.now()
+    mes = request.args.get("mes", type=int, default=hoje.month)
+    ano = request.args.get("ano", type=int, default=hoje.year)
+    start = f"{ano}-{mes:02d}-01"
+    end   = f"{ano+1}-01-01" if mes == 12 else f"{ano}-{mes+1:02d}-01"
+
+    db = get_db()
+    res = (
+        db.table("gastos_materiais")
+        .select("id, valor, descricao, briefing_id, criado_em")
+        .eq("tenant_id", g.tenant_id)
+        .gte("criado_em", start)
+        .lt("criado_em", end)
+        .order("criado_em", desc=True)
+        .execute()
+    )
+    return jsonify(res.data or [])
+
+
+@admin_bp.route("/materiais/gasto", methods=["PUT"])
+@require_tenant
+@require_admin
+def registrar_gasto_materiais():
+    body = request.get_json(force=True) or {}
+    try:
+        valor = float(body.get("valor", 0))
+        if valor <= 0:
+            raise ValueError()
+    except (TypeError, ValueError):
+        return jsonify({"error": "Valor inválido"}), 400
+
+    briefing_id = body.get("briefing_id") or None
+    if briefing_id:
+        try:
+            uuid.UUID(str(briefing_id))
+        except ValueError:
+            briefing_id = None
+
+    descricao = str(body.get("descricao", ""))[:300] or None
+
+    db = get_db()
+    db.table("gastos_materiais").insert({
+        "tenant_id":   g.tenant_id,
+        "valor":       valor,
+        "briefing_id": briefing_id,
+        "descricao":   descricao,
+    }).execute()
+    return jsonify({"ok": True})
+
+
+@admin_bp.route("/financeiro", methods=["GET"])
+@require_tenant
+@require_admin
+def financeiro():
+    hoje = datetime.now()
+    mes = request.args.get("mes", type=int, default=hoje.month)
+    ano = request.args.get("ano", type=int, default=hoje.year)
+
+    start = f"{ano}-{mes:02d}-01"
+    end   = f"{ano+1}-01-01" if mes == 12 else f"{ano}-{mes+1:02d}-01"
+
+    db = get_db()
+
+    pagamentos_mes = (
+        db.table("briefings")
+        .select("valor_combinado, data_pagamento, estilo, clientes(nome)")
+        .eq("tenant_id", g.tenant_id)
+        .eq("pago", True)
+        .gte("data_pagamento", start)
+        .lt("data_pagamento", end)
+        .order("data_pagamento", desc=True)
+        .execute()
+    )
+    todos_pagos = (
+        db.table("briefings")
+        .select("valor_combinado")
+        .eq("tenant_id", g.tenant_id)
+        .eq("pago", True)
+        .execute()
+    )
+    gastos_mes = (
+        db.table("gastos_materiais")
+        .select("valor")
+        .eq("tenant_id", g.tenant_id)
+        .gte("criado_em", start)
+        .lt("criado_em", end)
+        .execute()
+    )
+
+    lista         = pagamentos_mes.data or []
+    total_mes     = round(sum(float(row.get("valor_combinado") or 0) for row in lista), 2)
+    total_geral   = round(sum(float(row.get("valor_combinado") or 0) for row in (todos_pagos.data or [])), 2)
+    total_gastos  = round(sum(float(row.get("valor") or 0) for row in (gastos_mes.data or [])), 2)
+    lucro_liquido = round(total_mes - total_gastos, 2)
+
+    return jsonify({
+        "total_mes":     total_mes,
+        "total_geral":   total_geral,
+        "total_gastos":  total_gastos,
+        "lucro_liquido": lucro_liquido,
+        "pagamentos":    lista,
+    })
 
 
 @admin_bp.route("/dashboard", methods=["GET"])

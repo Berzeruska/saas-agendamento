@@ -129,9 +129,11 @@ CREATE TABLE IF NOT EXISTS briefings (
   local_corpo      TEXT,
   tamanho_aprox    TEXT,
   periodo_sugerido TEXT,
-  valor_proposto   NUMERIC(10,2),
+  data_proposta    DATE,
+  hora_proposta    TEXT,
+  notas_admin      TEXT,
   status           TEXT          DEFAULT 'aguardando'
-    CHECK (status IN ('aguardando','proposta_enviada','confirmado','recusado')),
+    CHECK (status IN ('aguardando','proposta_enviada','confirmado','recusado','cancelado','concluido')),
   agendamento_id   UUID          REFERENCES agendamentos(id) ON DELETE SET NULL,
   criado_em        TIMESTAMPTZ   DEFAULT NOW()
 );

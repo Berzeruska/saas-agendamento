@@ -20,12 +20,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Trata erros globais: extrai mensagem do backend
+// Trata erros globais: extrai mensagem do backend e converte erros técnicos
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    const msg = err.response?.data?.error || err.message || 'Erro de conexão'
-    return Promise.reject(new Error(msg))
+    const backendMsg = err.response?.data?.error
+    if (backendMsg) return Promise.reject(new Error(backendMsg))
+
+    // Erros de rede sem resposta do servidor
+    if (!err.response) return Promise.reject(new Error('Sem conexão com o servidor. Verifique sua internet.'))
+
+    const status = err.response.status
+    if (status === 500) return Promise.reject(new Error('Algo deu errado. Tente novamente.'))
+    if (status === 429) return Promise.reject(new Error('Muitas tentativas. Aguarde um momento.'))
+    if (status === 401) return Promise.reject(new Error('Sessão expirada. Faça login novamente.'))
+    if (status === 403) return Promise.reject(new Error('Sem permissão para esta ação.'))
+
+    return Promise.reject(new Error(err.response?.data?.error || err.message || 'Algo deu errado.'))
   }
 )
 
@@ -81,22 +92,38 @@ export const ordersAPI = {
 // ── Admin ─────────────────────────────────────────────────
 
 export const adminAPI = {
-  dashboard: ()          => api.get('/api/admin/dashboard'),
-  clients: ()            => api.get('/api/admin/clients'),
-  updateNotes: (id, n)   => api.put(`/api/admin/clients/${id}/notes`, { notas: n }),
-  toggleClient: (id)     => api.put(`/api/admin/clients/${id}/toggle`),
-  exportCSV: ()          => api.get('/api/admin/export/csv', { responseType: 'blob' }),
+  dashboard: ()            => api.get('/api/admin/dashboard'),
+  clients: ()              => api.get('/api/admin/clients'),
+  clientProfile: (id)      => api.get(`/api/admin/clients/${id}/profile`),
+  clientBriefings: (id)    => api.get(`/api/admin/clients/${id}/briefings`),
+  updateNotes: (id, n)     => api.put(`/api/admin/clients/${id}/notes`, { notas: n }),
+  toggleClient: (id)       => api.put(`/api/admin/clients/${id}/toggle`),
+  exportCSV: ()            => api.get('/api/admin/export/csv', { responseType: 'blob' }),
+  financeiro: (mes, ano)   => api.get('/api/admin/financeiro', { params: { mes, ano } }),
+  registrarGasto: (dados)  => api.put('/api/admin/materiais/gasto', dados),
+  listGastos: (mes, ano)   => api.get('/api/admin/materiais/gastos', { params: { mes, ano } }),
 }
 
 // ── Briefings ─────────────────────────────────────────────
 
 export const briefingsAPI = {
-  create: (formData)              => api.post('/api/briefings', formData, {
+  uploadFoto: (formData)           => api.post('/api/briefings/upload-foto', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
-  createJSON: (data)              => api.post('/api/briefings', data),
-  mine: ()                        => api.get('/api/briefings/mine'),
-  list: (status)                  => api.get('/api/briefings', { params: status ? { status } : {} }),
-  enviarProposta: (id, data)      => api.put(`/api/briefings/${id}/proposta`, data),
+  create: (formData)               => api.post('/api/briefings', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  createJSON: (data)               => api.post('/api/briefings', data),
+  mine: ()                         => api.get('/api/briefings/mine'),
+  list: (status)                   => api.get('/api/briefings', { params: status ? { status } : {} }),
+  confirmar: (id, data)            => api.put(`/api/briefings/${id}/proposta`, data),
+  reagendar: (id, data)            => api.put(`/api/briefings/${id}/reagendar`, data),
+  cancelar: (id)                   => api.delete(`/api/briefings/${id}`),
+  concluir: (id)                   => api.put(`/api/briefings/${id}/concluir`),
+  historico: ()                    => api.get('/api/briefings/historico'),
+  agendaDia: (date)                => api.get('/api/briefings/agenda', { params: { date } }),
+  agendaMes: (mes, ano)            => api.get('/api/briefings/agenda/mes', { params: { mes, ano } }),
   responderProposta: (id, aceitar) => api.put(`/api/briefings/${id}/resposta`, { aceitar }),
+  registrarValor:    (id, valor)   => api.put(`/api/briefings/${id}/valor`, { valor }),
+  confirmarPagamento:(id)          => api.put(`/api/briefings/${id}/pagamento`),
 }

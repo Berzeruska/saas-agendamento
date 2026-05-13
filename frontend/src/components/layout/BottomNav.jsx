@@ -1,11 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useCart } from '../../contexts/CartContext'
 import { config } from '../../config/index.js'
 
 export default function BottomNav() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { totalItens } = useCart()
 
   const agendarPath = config.camposExtras === 'briefing' ? '/briefing' : '/agendar'
 
@@ -42,7 +40,6 @@ export default function BottomNav() {
           <path d="M16 10a4 4 0 01-8 0" />
         </svg>
       ),
-      badge: true,
     },
     {
       path: '/historico',
@@ -64,12 +61,7 @@ export default function BottomNav() {
           className={`bottom-nav-item ${pathname === item.path ? 'ativo' : ''}`}
           onClick={() => navigate(item.path)}
         >
-          <div style={{ position: 'relative' }}>
-            {item.icon}
-            {item.badge && totalItens > 0 && (
-              <span className="bottom-nav-badge">{totalItens}</span>
-            )}
-          </div>
+          {item.icon}
           <span>{item.label}</span>
         </button>
       ))}
