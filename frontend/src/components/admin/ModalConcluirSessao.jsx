@@ -3,12 +3,15 @@ import { createPortal } from 'react-dom'
 import { productsAPI, adminAPI, briefingsAPI } from '../../services/api'
 
 export default function ModalConcluirSessao({ briefing, produtos, onConcluir, onFechar }) {
-  const [etapa, setEtapa]         = useState('valor')
-  const [valorInput, setValorInput] = useState('')
-  const [erroValor, setErroValor] = useState('')
-  const [qtdUsada, setQtdUsada]   = useState({})
-  const [salvando, setSalvando]   = useState(false)
-  const [erro, setErro]           = useState('')
+  const temValor   = Boolean(briefing.valor_combinado)
+  const estaPago   = Boolean(briefing.pago)
+
+  const [etapa, setEtapa]           = useState(temValor ? 'materiais' : 'valor')
+  const [valorInput, setValorInput] = useState(temValor ? String(briefing.valor_combinado) : '')
+  const [erroValor, setErroValor]   = useState('')
+  const [qtdUsada, setQtdUsada]     = useState({})
+  const [salvando, setSalvando]     = useState(false)
+  const [erro, setErro]             = useState('')
 
   function avancar(e) {
     e.preventDefault()
@@ -24,7 +27,6 @@ export default function ModalConcluirSessao({ briefing, produtos, onConcluir, on
   async function finalizar(registrarMat) {
     setSalvando(true)
     setErro('')
-    const valorSessao = parseFloat(valorInput.replace(',', '.'))
     try {
       if (registrarMat) {
         const itens = produtos.filter(p => (qtdUsada[p.id] || 0) > 0)
@@ -39,7 +41,20 @@ export default function ModalConcluirSessao({ briefing, produtos, onConcluir, on
           })
         }
       }
-      await briefingsAPI.concluir(briefing.id, { valor_sessao: valorSessao })
+
+      if (!temValor) {
+        // Caso 1: sem valor — concluir já salva valor_combinado + status=concluido
+        const v = parseFloat(valorInput.replace(',', '.'))
+        await briefingsAPI.concluir(briefing.id, { valor_sessao: v })
+      } else if (!estaPago) {
+        // Caso 2: tem valor mas não está pago — marcar pago + concluir
+        await briefingsAPI.confirmarPagamento(briefing.id)
+        await briefingsAPI.concluir(briefing.id)
+      } else {
+        // Caso 3: já está pago — só concluir
+        await briefingsAPI.concluir(briefing.id)
+      }
+
       onConcluir()
     } catch (e) {
       setErro(e.message)

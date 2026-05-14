@@ -28,16 +28,29 @@ export default function AdminDashboard() {
   const [carregando, setCarregando]     = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      adminAPI.dashboard(),
-      briefingsAPI.list('aguardando'),
-    ])
+    let cancelled = false
+
+    async function fetchPending() {
+      try {
+        const { data } = await briefingsAPI.list('aguardando')
+        if (!cancelled) setAguardandoCount(Array.isArray(data) ? data.length : 0)
+      } catch {}
+    }
+
+    Promise.all([adminAPI.dashboard(), briefingsAPI.list('aguardando')])
       .then(([{ data: dash }, { data: pending }]) => {
+        if (cancelled) return
         setDados(dash)
         setAguardandoCount(Array.isArray(pending) ? pending.length : 0)
       })
       .catch(() => {})
-      .finally(() => setCarregando(false))
+      .finally(() => { if (!cancelled) setCarregando(false) })
+
+    const interval = setInterval(fetchPending, 30_000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
   }, [])
 
   const hoje = dados?.hoje || {}
