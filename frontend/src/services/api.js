@@ -122,7 +122,7 @@ export const briefingsAPI = {
   confirmar: (id, data)            => api.put(`/api/briefings/${id}/proposta`, data),
   reagendar: (id, data)            => api.put(`/api/briefings/${id}/reagendar`, data),
   cancelar: (id)                   => api.delete(`/api/briefings/${id}`),
-  concluir: (id)                   => api.put(`/api/briefings/${id}/concluir`),
+  concluir: (id, data = {})         => api.put(`/api/briefings/${id}/concluir`, data),
   historico: ()                    => api.get('/api/briefings/historico'),
   agendaDia: (date)                => api.get('/api/briefings/agenda', { params: { date } }),
   agendaMes: (mes, ano)            => api.get('/api/briefings/agenda/mes', { params: { mes, ano } }),

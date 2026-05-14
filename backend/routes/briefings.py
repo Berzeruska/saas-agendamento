@@ -521,6 +521,19 @@ def cancelar_briefing(briefing_id):
 def concluir_briefing(briefing_id):
     if not _valid_uuid(briefing_id):
         return jsonify({"error": "ID inválido"}), 400
+
+    body = request.get_json(force=True) or {}
+    valor_sessao = None
+    if "valor_sessao" in body:
+        try:
+            v = float(body["valor_sessao"])
+            if v > 0:
+                valor_sessao = v
+            else:
+                return jsonify({"error": "Valor inválido"}), 400
+        except (TypeError, ValueError):
+            return jsonify({"error": "Valor inválido"}), 400
+
     db = get_db()
     briefing = (
         db.table("briefings")
@@ -535,7 +548,11 @@ def concluir_briefing(briefing_id):
     if briefing.data["status"] != "confirmado":
         return jsonify({"error": "Apenas sessões confirmadas podem ser concluídas"}), 409
 
-    res = db.table("briefings").update({"status": "concluido"}).eq("id", briefing_id).eq("tenant_id", g.tenant_id).execute()
+    update_data: dict = {"status": "concluido"}
+    if valor_sessao is not None:
+        update_data["valor_combinado"] = valor_sessao
+
+    res = db.table("briefings").update(update_data).eq("id", briefing_id).eq("tenant_id", g.tenant_id).execute()
     return jsonify(res.data[0] if res.data else {})
 
 

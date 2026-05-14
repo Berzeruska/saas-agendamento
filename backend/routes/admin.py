@@ -187,21 +187,40 @@ def financeiro():
 
     db = get_db()
 
-    pagamentos_mes = (
+    concluidos_mes = (
         db.table("briefings")
-        .select("valor_combinado, data_pagamento, estilo, clientes(nome)")
+        .select("valor_combinado, data_pagamento, data_proposta, estilo, status, clientes(nome)")
         .eq("tenant_id", g.tenant_id)
-        .eq("pago", True)
-        .gte("data_pagamento", start)
-        .lt("data_pagamento", end)
-        .order("data_pagamento", desc=True)
+        .eq("status", "concluido")
+        .not_.is_("valor_combinado", "null")
+        .gte("data_proposta", start)
+        .lt("data_proposta", end)
         .execute()
     )
-    todos_pagos = (
+    pagos_mes = (
+        db.table("briefings")
+        .select("valor_combinado, data_pagamento, data_proposta, estilo, status, clientes(nome)")
+        .eq("tenant_id", g.tenant_id)
+        .eq("pago", True)
+        .neq("status", "concluido")
+        .gte("data_pagamento", start)
+        .lt("data_pagamento", end)
+        .execute()
+    )
+    todos_concluidos = (
+        db.table("briefings")
+        .select("valor_combinado")
+        .eq("tenant_id", g.tenant_id)
+        .eq("status", "concluido")
+        .not_.is_("valor_combinado", "null")
+        .execute()
+    )
+    todos_pagos_nc = (
         db.table("briefings")
         .select("valor_combinado")
         .eq("tenant_id", g.tenant_id)
         .eq("pago", True)
+        .neq("status", "concluido")
         .execute()
     )
     gastos_mes = (
@@ -213,13 +232,24 @@ def financeiro():
         .execute()
     )
 
-    lista         = pagamentos_mes.data or []
-    total_mes     = round(sum(float(row.get("valor_combinado") or 0) for row in lista), 2)
-    total_geral   = round(sum(float(row.get("valor_combinado") or 0) for row in (todos_pagos.data or [])), 2)
-    total_gastos  = round(sum(float(row.get("valor") or 0) for row in (gastos_mes.data or [])), 2)
+    def _data_ref(row):
+        return row.get("data_pagamento") or row.get("data_proposta") or ""
+
+    lista = sorted(
+        (concluidos_mes.data or []) + (pagos_mes.data or []),
+        key=_data_ref, reverse=True,
+    )
+
+    total_mes     = round(sum(float(r.get("valor_combinado") or 0) for r in lista), 2)
+    total_geral   = round(
+        sum(float(r.get("valor_combinado") or 0) for r in (todos_concluidos.data or []))
+        + sum(float(r.get("valor_combinado") or 0) for r in (todos_pagos_nc.data or [])),
+        2,
+    )
+    total_gastos  = round(sum(float(r.get("valor") or 0) for r in (gastos_mes.data or [])), 2)
     lucro_liquido = round(total_mes - total_gastos, 2)
 
-    print(f"[financeiro] tenant={g.tenant_id} mes={mes}/{ano} range={start}→{end} pagamentos={len(lista)} total_mes={total_mes} total_geral={total_geral}", flush=True)
+    print(f"[financeiro] tenant={g.tenant_id} mes={mes}/{ano} range={start}→{end} concluidos={len(concluidos_mes.data or [])} pagos_nc={len(pagos_mes.data or [])} total_mes={total_mes} total_geral={total_geral}", flush=True)
 
     return jsonify({
         "total_mes":     total_mes,

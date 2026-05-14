@@ -99,7 +99,7 @@ export default function AdminFinancial() {
 
       {/* Lista */}
       <p className="admin-secao-label">
-        PAGAMENTOS — {MESES[mes - 1].toUpperCase()} {ano}
+        SESSÕES — {MESES[mes - 1].toUpperCase()} {ano}
       </p>
 
       {carregando && (
@@ -107,39 +107,53 @@ export default function AdminFinancial() {
       )}
 
       {!carregando && pagamentos.length === 0 && (
-        <div className="alerta alerta-info">Nenhum pagamento registrado neste mês.</div>
+        <div className="alerta alerta-info">Nenhuma sessão registrada neste mês.</div>
       )}
 
       <div className="stack">
-        {pagamentos.map((p, i) => (
-          <div
-            key={i}
-            className="card animar-entrada"
-            style={{ animationDelay: `${i * 0.04}s`, padding: '14px 16px' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 2 }}>
-                  {p.clientes?.nome || 'Cliente'}
-                </p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--cor-texto-fraco)' }}>
-                  {p.estilo || 'Tattoo'}
-                  {p.data_pagamento && (
-                    <> · {new Date(p.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR')}</>
-                  )}
-                </p>
+        {pagamentos.map((p, i) => {
+          const dataRef = p.data_pagamento || p.data_proposta
+          const concluido = p.status === 'concluido'
+          return (
+            <div
+              key={i}
+              className="card animar-entrada"
+              style={{ animationDelay: `${i * 0.04}s`, padding: '14px 16px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                      {p.clientes?.nome || 'Cliente'}
+                    </p>
+                    <span style={{
+                      fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
+                      padding: '2px 7px', borderRadius: 20,
+                      background: concluido ? 'var(--cor-acento)' : 'var(--cor-sucesso)',
+                      color: '#fff',
+                    }}>
+                      {concluido ? 'CONCLUÍDO' : 'PAGO'}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--cor-texto-fraco)' }}>
+                    {p.estilo || 'Tattoo'}
+                    {dataRef && (
+                      <> · {new Date(dataRef + 'T00:00:00').toLocaleDateString('pt-BR')}</>
+                    )}
+                  </p>
+                </div>
+                <span style={{
+                  fontFamily: 'var(--fonte-display)',
+                  fontSize: '1.25rem',
+                  color: 'var(--cor-sucesso)',
+                  flexShrink: 0,
+                }}>
+                  R$ {Number(p.valor_combinado).toFixed(2)}
+                </span>
               </div>
-              <span style={{
-                fontFamily: 'var(--fonte-display)',
-                fontSize: '1.25rem',
-                color: 'var(--cor-sucesso)',
-                flexShrink: 0,
-              }}>
-                R$ {Number(p.valor_combinado).toFixed(2)}
-              </span>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
